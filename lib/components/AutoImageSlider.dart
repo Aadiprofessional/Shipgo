@@ -14,29 +14,30 @@ class _AutoImageSliderState extends State<AutoImageSlider> {
   ];
 
   final PageController _pageController = PageController(
-    viewportFraction: 0.8, // Adjust this value to make images smaller
+    viewportFraction: 0.8,
   );
-  int _currentIndex = 1; // Start at 1 to ensure proper wrapping
+  int _currentIndex = 1;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the PageView to the first image
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _pageController.jumpToPage(_currentIndex);
     });
 
     Timer.periodic(Duration(seconds: 7), (Timer timer) {
-      _currentIndex++;
-      if (_currentIndex >= images.length + 1) {
-        _currentIndex = 1;
-        _pageController.jumpToPage(_currentIndex);
-      } else {
-        _pageController.animateToPage(
-          _currentIndex,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
+      if (_pageController.hasClients) {
+        _currentIndex++;
+        if (_currentIndex >= images.length + 1) {
+          _currentIndex = 1;
+          _pageController.jumpToPage(_currentIndex);
+        } else {
+          _pageController.animateToPage(
+            _currentIndex,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
       }
     });
   }
@@ -46,12 +47,12 @@ class _AutoImageSliderState extends State<AutoImageSlider> {
     return Container(
       width: MediaQuery.of(context).size.width,
       height: 200,
-      color: Color(0xFF25424D), // Background color of the header
+      color: Color(0xFF25424D),
       child: Stack(
         children: [
           PageView.builder(
             controller: _pageController,
-            itemCount: images.length + 2, // Add two for looping effect
+            itemCount: images.length + 2,
             itemBuilder: (context, index) {
               int imageIndex = index;
               if (index == 0) {
@@ -62,7 +63,7 @@ class _AutoImageSliderState extends State<AutoImageSlider> {
                 imageIndex = index - 1;
               }
               return Container(
-                margin: EdgeInsets.symmetric(horizontal: 10), // Margin to show parts of neighboring images
+                margin: EdgeInsets.symmetric(horizontal: 10),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   image: DecorationImage(
@@ -97,8 +98,8 @@ class _AutoImageSliderState extends State<AutoImageSlider> {
                   height: 8,
                   decoration: BoxDecoration(
                     color: _currentIndex == index + 1
-                        ? Color.fromARGB(255, 205, 243, 105) // Active color
-                        : Color.fromARGB(128, 145, 145, 145), // Inactive color
+                        ? Color.fromARGB(255, 205, 243, 105)
+                        : Color.fromARGB(128, 145, 145, 145),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 );
@@ -108,5 +109,11 @@ class _AutoImageSliderState extends State<AutoImageSlider> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose(); // Dispose of the controller when the widget is removed
+    super.dispose();
   }
 }

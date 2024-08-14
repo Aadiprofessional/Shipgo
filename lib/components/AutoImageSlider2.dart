@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 
 class AutoImageSlider2 extends StatefulWidget {
   @override
-  _AutoImageSliderState createState() => _AutoImageSliderState();
+  _AutoImageSliderState2 createState() => _AutoImageSliderState2();
 }
 
-class _AutoImageSliderState extends State<AutoImageSlider2> {
+class _AutoImageSliderState2 extends State<AutoImageSlider2> {
   final List<String> images = [
     'images/banner3.png',
     'images/banner3.png',
@@ -14,29 +14,30 @@ class _AutoImageSliderState extends State<AutoImageSlider2> {
   ];
 
   final PageController _pageController = PageController(
-    viewportFraction: 0.8, // Adjust this value to make images smaller
+    viewportFraction: 0.8,
   );
-  int _currentIndex = 1; // Start at 1 to ensure proper wrapping
+  int _currentIndex = 1;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the PageView to the first image
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _pageController.jumpToPage(_currentIndex);
     });
 
     Timer.periodic(Duration(seconds: 7), (Timer timer) {
-      _currentIndex++;
-      if (_currentIndex >= images.length + 1) {
-        _currentIndex = 1;
-        _pageController.jumpToPage(_currentIndex);
-      } else {
-        _pageController.animateToPage(
-          _currentIndex,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
+      if (_pageController.hasClients) {
+        _currentIndex++;
+        if (_currentIndex >= images.length + 1) {
+          _currentIndex = 1;
+          _pageController.jumpToPage(_currentIndex);
+        } else {
+          _pageController.animateToPage(
+            _currentIndex,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
       }
     });
   }
@@ -46,10 +47,9 @@ class _AutoImageSliderState extends State<AutoImageSlider2> {
     return Container(
       width: MediaQuery.of(context).size.width,
       height: 200,
-      // color: Color(0xFF25424D), // Removed background color
       child: PageView.builder(
         controller: _pageController,
-        itemCount: images.length + 2, // Add two for looping effect
+        itemCount: images.length + 2,
         itemBuilder: (context, index) {
           int imageIndex = index;
           if (index == 0) {
@@ -60,7 +60,7 @@ class _AutoImageSliderState extends State<AutoImageSlider2> {
             imageIndex = index - 1;
           }
           return Container(
-            margin: EdgeInsets.symmetric(horizontal: 10), // Margin to show parts of neighboring images
+            margin: EdgeInsets.symmetric(horizontal: 10),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               image: DecorationImage(
@@ -83,5 +83,11 @@ class _AutoImageSliderState extends State<AutoImageSlider2> {
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose(); // Dispose of the controller when the widget is removed
+    super.dispose();
   }
 }

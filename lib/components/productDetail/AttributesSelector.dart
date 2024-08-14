@@ -34,7 +34,7 @@ class AttributesSelector extends StatelessWidget {
                 child: Container(
                   padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                   decoration: BoxDecoration(
-                    color: isSelected ? Color(0xFF007AFF) : Colors.white,
+                    color: isSelected ? Color(0xFF25424D) : Colors.white,
                     border: Border.all(
                       color: isSelected ? Colors.transparent : Color(0xFFB3B3B3),
                     ),

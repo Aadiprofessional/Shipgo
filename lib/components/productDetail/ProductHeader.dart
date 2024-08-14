@@ -52,7 +52,7 @@ class ProductHeader extends StatelessWidget {
               GestureDetector(
                 onTap: () => onCall(),
                 child: Image.asset(
-                  'assets/call.png',
+                  'images/call.png',
                   width: 65,
                   height: 65,
                 ),

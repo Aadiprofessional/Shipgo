@@ -21,6 +21,7 @@ class ImageCarousel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
+      height: 300, // Define a specific height to avoid the infinite height issue
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(5),
@@ -44,11 +45,11 @@ class ImageCarousel extends StatelessWidget {
             ),
           Positioned(
             left: 10,
-            top: MediaQuery.of(context).size.height * 0.4,
+            top: MediaQuery.of(context).size.height * 0.15, // Adjusted position to fit the defined height
             child: GestureDetector(
               onTap: () => onPrevious(),
               child: CircleAvatar(
-                backgroundColor: Color(0xFF007AFF),
+                backgroundColor: Color(0xFF25424D),
                 child: Text(
                   '<',
                   style: TextStyle(color: Colors.white, fontSize: 30),
@@ -58,11 +59,11 @@ class ImageCarousel extends StatelessWidget {
           ),
           Positioned(
             right: 10,
-            top: MediaQuery.of(context).size.height * 0.4,
+            top: MediaQuery.of(context).size.height * 0.15, // Adjusted position to fit the defined height
             child: GestureDetector(
               onTap: () => onNext(),
               child: CircleAvatar(
-                backgroundColor: Color(0xFF007AFF),
+                backgroundColor: Color(0xFF25424D),
                 child: Text(
                   '>',
                   style: TextStyle(color: Colors.white, fontSize: 30),
@@ -82,7 +83,7 @@ class ImageCarousel extends StatelessWidget {
                   margin: EdgeInsets.symmetric(horizontal: 5),
                   decoration: BoxDecoration(
                     color: index == imageIndex
-                        ? Color(0xFF316487)
+                        ? Color.fromARGB(255, 205, 243, 105)
                         : Color(0xFFA7A7A7),
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -114,7 +115,7 @@ class ImageCarousel extends StatelessWidget {
             child: CircleAvatar(
               backgroundColor: Color(0xFFB3B3B3),
               child: Image.asset(
-                'assets/truck.png',
+                'images/truck.png',
                 width: 24,
                 height: 24,
                 color: Colors.white,

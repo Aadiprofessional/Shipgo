@@ -15,10 +15,9 @@ class ProductContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String imageUrl = product['image'];
+    final String imageUrl = product['MainImage'];
     final String name = product['name'];
     final String price = product['price'];
-    final String description = product['description'];
 
     return GestureDetector(
       onTap: () {
@@ -70,7 +69,8 @@ class ProductContainer extends StatelessWidget {
                         ),
                         child: Image.network(
                           imageUrl,
-                          fit: BoxFit.contain, // Ensure the image fits inside the container
+                          fit: BoxFit
+                              .contain, // Ensure the image fits inside the container
                         ),
                       ),
                     ),
@@ -119,13 +119,6 @@ class ProductContainer extends StatelessWidget {
               child: Text(
                 'Price: \$${price}',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8, top: 2),
-              child: Text(
-                description,
-                style: TextStyle(fontSize: 14),
               ),
             ),
           ],

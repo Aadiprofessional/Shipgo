@@ -1,17 +1,28 @@
 import 'package:flutter/material.dart';
 
-class QuantityControl extends StatelessWidget {
-  final int quantity;
+class QuantityControl extends StatefulWidget {
   final int minValue;
   final Function onIncrease;
   final Function onDecrease;
 
   QuantityControl({
-    required this.quantity,
     required this.minValue,
     required this.onIncrease,
     required this.onDecrease,
   });
+
+  @override
+  _QuantityControlState createState() => _QuantityControlState();
+}
+
+class _QuantityControlState extends State<QuantityControl> {
+  late int quantity;
+
+  @override
+  void initState() {
+    super.initState();
+    quantity = widget.minValue > 0 ? widget.minValue : 1;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,12 +34,17 @@ class QuantityControl extends StatelessWidget {
         ),
         SizedBox(width: 10),
         GestureDetector(
-          onTap: quantity <= minValue ? null : () => onDecrease(),
+          onTap: quantity <= widget.minValue ? null : () {
+            setState(() {
+              quantity--;
+            });
+            widget.onDecrease();
+          },
           child: Container(
             width: 30,
             height: 30,
             decoration: BoxDecoration(
-              color: quantity <= minValue ? Color(0xFFB3B3B3) : Color(0xFF007AFF),
+              color: quantity <= widget.minValue ? Color(0xFFB3B3B3) : Color(0xFF25424D),
               borderRadius: BorderRadius.circular(15),
             ),
             child: Center(
@@ -46,12 +62,17 @@ class QuantityControl extends StatelessWidget {
         ),
         SizedBox(width: 10),
         GestureDetector(
-          onTap: () => onIncrease(),
+          onTap: () {
+            setState(() {
+              quantity++;
+            });
+            widget.onIncrease();
+          },
           child: Container(
             width: 30,
             height: 30,
             decoration: BoxDecoration(
-              color: Color(0xFF007AFF),
+              color: Color(0xFF25424D),
               borderRadius: BorderRadius.circular(15),
             ),
             child: Center(
