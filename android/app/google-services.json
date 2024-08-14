@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "937754918250",
+    "project_id": "shipgo-b9fb3",
+    "storage_bucket": "shipgo-b9fb3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:937754918250:android:d6d5ff304f6d86aedcb913",
+        "android_client_info": {
+          "package_name": "com.example.shipgo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrln9T4PbtERVoO1h8oDBuwExpFqQwtEo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
