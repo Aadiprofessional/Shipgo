@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fluttertoast/fluttertoast.dart'; // Add this for toast messages
-import 'package:shipgo/screens/LoginScreen.dart'; // Correctly import LoginScreen
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shipgo/screens/ContactUsScreen.dart';
+import 'package:shipgo/screens/DeliveryAddressScreen.dart';
+import 'package:shipgo/screens/HelpFaqScreen.dart';
+import 'package:shipgo/screens/MyOrdersScreen.dart';
+import 'package:shipgo/screens/profileScreen.dart';
 
 class LeftNavBar extends StatelessWidget {
   final String userId;
-  final VoidCallback onClose; // Add this parameter
+  final VoidCallback onClose;
 
   LeftNavBar({
     required this.userId,
     required this.onClose,
-  }); // Update constructor
+  });
 
   Future<Map<String, dynamic>> _fetchUserData() async {
-    final doc =
-        await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    final doc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
     return doc.data() ?? {};
   }
 
@@ -54,29 +57,74 @@ class LeftNavBar extends StatelessWidget {
                     if (userData['name'] != null)
                       Text(
                         userData['name'],
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     if (userData['email'] != null)
                       Text(
                         userData['email'],
                         style: TextStyle(fontSize: 16, color: Colors.grey),
                       ),
-                    _buildNavItem(Icons.list, 'My Orders'),
-                    _buildNavItem(Icons.person, 'My Profile'),
-                    _buildNavItem(Icons.location_on, 'Delivery Address'),
-                    _buildNavItem(Icons.contact_mail, 'Contact Us'),
-                    _buildNavItem(Icons.help, 'Help & FAQs'),
+                    _buildNavItem(
+                      Icons.list,
+                      'My Orders',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => OrdersScreen()),
+                        );
+                      },
+                    ),
+                    _buildNavItem(
+                      Icons.person,
+                      'My Profile',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ProfileScreen()),
+                        );
+                      },
+                    ),
+                    _buildNavItem(
+                      Icons.location_on,
+                      'Delivery Address',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => DeliveryAddressScreen()),
+                        );
+                      },
+                    ),
+                    _buildNavItem(
+                      Icons.contact_mail,
+                      'Contact Us',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ContactUsScreen()),
+                        );
+                      },
+                    ),
+                    _buildNavItem(
+                      Icons.help,
+                      'Help & FAQs',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => HelpScreen()),
+                        );
+                      },
+                    ),
                     Container(
                       decoration: BoxDecoration(
                         color: Color(0xFF25424D),
                         borderRadius: BorderRadius.circular(30),
                       ),
-                      width: 135, // Reduced width
+                      width: 135,
                       child: Center(
                         child: ListTile(
-                          leading: Image.asset('images/logout.png',
-                              width: 24, height: 24), // Use your image path
+                          leading: Image.asset(
+                              'images/logout.png',
+                              width: 24, height: 24),
                           title: Text('Logout',
                               style: TextStyle(color: Colors.white)),
                           onTap: () async {
@@ -110,14 +158,12 @@ class LeftNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(IconData icon, String text,
-      {VoidCallback? onLogoutTap}) {
+  Widget _buildNavItem(IconData icon, String text, {VoidCallback? onTap}) {
     return ListTile(
       leading: Icon(icon),
       title: Text(text),
-      onTap: onLogoutTap ?? () {},
-      contentPadding:
-          EdgeInsets.symmetric(vertical: 5.0, horizontal: 20.0), // Reduced gap
+      onTap: onTap,
+      contentPadding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 20.0),
     );
   }
 }

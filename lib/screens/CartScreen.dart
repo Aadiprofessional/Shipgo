@@ -1,25 +1,30 @@
+// ignore: file_names
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shipgo/components/CartItem.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shipgo/components/CartItemWidget.dart';
 import 'package:shipgo/components/cartContext.dart';
 import 'package:shipgo/screens/OrderMapScreen.dart';
 import '../styles/colors.dart'; // Ensure this path is correct
 
-
 class CartScreen extends StatefulWidget {
+  const CartScreen({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _CartScreenState createState() => _CartScreenState();
 }
 
 class _CartScreenState extends State<CartScreen> {
-  bool _loading = false;
+  bool _loading = true; // Start with loading true
   bool _isUserLoggedIn = false; // Update this based on your authentication logic
 
   @override
   void initState() {
     super.initState();
     // Simulate a delay to mimic loading state
-    Future.delayed(Duration(seconds: 1), () {
+    Future.delayed(const Duration(seconds: 1), () {
       setState(() {
         _loading = false;
         _isUserLoggedIn = true; // Simulate user login state
@@ -27,12 +32,60 @@ class _CartScreenState extends State<CartScreen> {
     });
   }
 
+  Future<void> _placeOrder() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      // Handle case where the user is not logged in
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in to place an order.')),
+      );
+      return;
+    }
+
+    final uid = user.uid;
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    final cartItems = cartProvider.cartItems;
+    final totalPrice = cartProvider.totalPrice;
+
+    try {
+      final orderRef = FirebaseFirestore.instance.collection('orders').doc();
+      final orderData = {
+        'uid': uid,
+        'timestamp': FieldValue.serverTimestamp(),
+        'totalPrice': totalPrice,
+        'items': cartItems.map((item) => {
+          'productName': item.productName,
+          'price': item.price,
+          'quantity': item.quantity,
+          'image': item.image,
+        }).toList(),
+      };
+
+      await orderRef.set(orderData);
+
+      // Optionally, navigate to another screen or show a success message
+      Navigator.push(
+        // ignore: use_build_context_synchronously
+        context,
+        MaterialPageRoute(
+          builder: (context) => OrderMapScreen(),
+        ),
+      );
+    } catch (e) {
+      // Handle error
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to place order. Please try again.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cartProvider = Provider.of<CartProvider>(context);
 
     if (_loading) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: Colors.white,
         body: Center(
           child: CircularProgressIndicator(color: AppColors.main),
@@ -41,30 +94,13 @@ class _CartScreenState extends State<CartScreen> {
     }
 
     if (!_isUserLoggedIn) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: Colors.white,
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset('images/Login.png', width: 300, height: 300),
-              Text(
-                'Please log in to access your cart.',
-                style: TextStyle(fontSize: 16, color: Colors.black),
-                textAlign: TextAlign.center,
-              ),
-              ElevatedButton(
-                child: Text('Login'),
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: AppColors.second,
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
-                ),
-                onPressed: () {
-                  // Implement login functionality
-                },
-              ),
-            ],
+          child: Text(
+            'Please log in to access your cart.',
+            style: TextStyle(fontSize: 16, color: Colors.black),
+            textAlign: TextAlign.center,
           ),
         ),
       );
@@ -73,18 +109,31 @@ class _CartScreenState extends State<CartScreen> {
     final cartItems = cartProvider.cartItems;
     final totalPrice = cartProvider.totalPrice;
 
+    if (cartItems.isEmpty) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: Text(
+            'Your cart is empty.',
+            style: TextStyle(fontSize: 16, color: Colors.black),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            padding: EdgeInsets.all(15),
+            padding: const EdgeInsets.all(15),
             color: AppColors.main,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'Cart',
                   style: TextStyle(
                     fontSize: 20,
@@ -94,7 +143,7 @@ class _CartScreenState extends State<CartScreen> {
                 ),
                 Text(
                   'Subtotal: ₹${totalPrice.toStringAsFixed(2)}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 20,
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -111,7 +160,7 @@ class _CartScreenState extends State<CartScreen> {
                 return CartItemWidget(
                   item: item,
                   onUpdateQuantity: (cartId, newQuantity) {
-                   
+                    cartProvider.updateItemQuantity(cartId, newQuantity);
                   },
                   onRemoveItem: (cartId) {
                     cartProvider.removeItemFromCart(cartId);
@@ -121,116 +170,23 @@ class _CartScreenState extends State<CartScreen> {
             ),
           ),
           Padding(
-            padding: EdgeInsets.all(15),
+            padding: const EdgeInsets.all(15),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-               
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 ElevatedButton(
-                  child: Text('Place Order'),
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
                     backgroundColor: AppColors.main,
-                    padding: EdgeInsets.symmetric(vertical: 15),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
-                  onPressed: () {
-                       Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => OrderMapScreen(), // Navigate to OrderMapScreen
-                  ),
-                );
-                  },
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class CartItemWidget extends StatelessWidget {
-  final CartItem item;
-  final Function(String, int) onUpdateQuantity;
-  final Function(String) onRemoveItem;
-
-  CartItemWidget({
-    required this.item,
-    required this.onUpdateQuantity,
-    required this.onRemoveItem,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(10),
-      margin: EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            offset: Offset(0, 2),
-            blurRadius: 4,
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: item.image.isNotEmpty
-              ? Image.network(
-                  item.image,
-                  fit: BoxFit.cover,
-                )
-              : Icon(Icons.image, size: 40), // Placeholder icon if no image
-          ),
-          SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(item.itemName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Text("₹${(item.price * item.quantity).toStringAsFixed(2)}",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Row(
-                  children: [
-                    Text("Color: ${item.color}"),
-                    SizedBox(width: 10),
-                    GestureDetector(
-                      onTap: () {
-                        onRemoveItem(item.cartId);
-                      },
-                      child: Text('Remove', style: TextStyle(color: Colors.red)),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.remove),
-                      onPressed: () {
-                        onUpdateQuantity(item.cartId, item.quantity - 1);
-                      },
-                    ),
-                    Text(item.quantity.toString(), style: TextStyle(fontSize: 18)),
-                    IconButton(
-                      icon: Icon(Icons.add),
-                      onPressed: () {
-                        onUpdateQuantity(item.cartId, item.quantity + 1);
-                      },
-                    ),
-                  ],
+                  onPressed: cartItems.isEmpty
+                      ? null
+                      : () {
+                          _placeOrder();
+                        },
+                  child: const Text('Place Order'),
                 ),
               ],
             ),

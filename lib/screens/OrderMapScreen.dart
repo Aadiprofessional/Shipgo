@@ -5,8 +5,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:provider/provider.dart';
+import 'package:shipgo/components/CartItemWidget.dart';
 import 'package:shipgo/components/cartContext.dart';
-import 'package:shipgo/screens/CartScreen.dart';
+import 'package:shipgo/screens/CartScreen.dart'; // Keep only this import
 
 class OrderMapScreen extends StatefulWidget {
   @override
@@ -191,6 +192,7 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
                   item: item,
                   onUpdateQuantity: (cartId, newQuantity) {
                     // Handle update quantity
+                    cartProvider.updateItemQuantity(cartId, newQuantity);
                   },
                   onRemoveItem: (cartId) {
                     cartProvider.removeItemFromCart(cartId);

@@ -1,6 +1,10 @@
+import 'dart:io'; // Import this for File
 import 'package:flutter/material.dart';
-import 'package:shipgo/styles/colors.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path/path.dart'; // Import for basename
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -12,22 +16,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String userName = 'Your Name';
   String? profileImage;
   final int rewardPoints = 100;
+  final picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
-
+    _fetchUserData();
   }
 
- 
+  Future<void> _fetchUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final uid = user.uid;
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final data = doc.data();
+      if (data != null) {
+        setState(() {
+          phoneNumber = data['phone'] ?? '';
+          userName = data['name'] ?? 'Your Name';
+          profileImage = data['profileImage'] ?? '';
+        });
+      }
+    }
+  }
+
+  Future<void> _uploadImage() async {
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      final file = File(pickedFile.path);
+      final fileName = basename(pickedFile.path);
+      final storageRef = FirebaseStorage.instance.ref().child('profile_images/$fileName');
+      await storageRef.putFile(file);
+      final newImageUrl = await storageRef.getDownloadURL();
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final uid = user.uid;
+        await FirebaseFirestore.instance.collection('users').doc(uid).update({'profileImage': newImageUrl});
+        setState(() {
+          profileImage = newImageUrl;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final options = [
-      {'iconName': 'office-building-outline', 'text': 'Manage Companies', 'screen': '/UserCompaniesScreen'},
-      {'iconName': 'file-document-outline', 'text': 'Terms and Conditions', 'screen': '/TermsConditionsScreen'},
-      {'iconName': 'shield-lock-outline', 'text': 'Privacy and Policy', 'screen': '/PrivacyPolicyScreen'},
-      {'iconName': 'email-outline', 'text': 'Contact us', 'screen': '/NeedHelp'},
-      {'iconName': 'logout', 'text': 'Log out', 'screen': ''},
+     
     ];
 
     return Scaffold(
@@ -54,9 +89,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundImage: profileImage != null ? NetworkImage(profileImage!) : AssetImage('images/profile.png') as ImageProvider,
+                  GestureDetector(
+                    onTap: _uploadImage,
+                    child: CircleAvatar(
+                      radius: 40,
+                      backgroundImage: profileImage != null
+                          ? NetworkImage(profileImage!)
+                          : AssetImage('images/profile.png') as ImageProvider,
+                    ),
                   ),
                   SizedBox(width: 15),
                   Expanded(
@@ -65,17 +105,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         Text(
                           userName,
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textBlack),
+                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
                         ),
                         SizedBox(height: 5),
                         Text(
                           'Mobile: ${phoneNumber != 'N/A' ? '+91 $phoneNumber' : 'N/A'}',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textBlack),
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
                         ),
                         SizedBox(height: 10),
                         Text(
                           'Reward Points: $rewardPoints',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textBlack),
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
                         ),
                       ],
                     ),
@@ -88,8 +128,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SizedBox(height: 20),
             ...options.map((option) {
               return ListTile(
-                
-                
+                leading: Icon(Icons.ac_unit), // Replace with actual icon if available
+                title: Text(option['text']!),
+                onTap: () {
+                  Navigator.pushNamed(context, option['screen']!);
+                },
               );
             }).toList(),
           ],

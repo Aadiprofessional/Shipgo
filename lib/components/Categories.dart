@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shipgo/components/AutoImageSlider2.dart';
 import 'package:shipgo/components/ProductScreen.dart';
 
 class Categories extends StatefulWidget {
@@ -28,6 +29,7 @@ class _CategoriesState extends State<Categories> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start, // Align children to the left
       children: [
         SizedBox(height: 10),
         SingleChildScrollView(
@@ -72,7 +74,7 @@ class _CategoriesState extends State<Categories> {
                           fontWeight: FontWeight.w600,
                           color: isActive ? Colors.white : Colors.black,
                         ),
-                        textAlign: TextAlign.center,
+                        textAlign: TextAlign.center, // Center-align text within the container
                       ),
                     ],
                   ),
@@ -82,23 +84,42 @@ class _CategoriesState extends State<Categories> {
           ),
         ),
         SizedBox(height: 20),
-        Text(
-          'Featured Products',
-          textAlign: TextAlign.left,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
+        Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Text(
+            'Featured Products',
+            textAlign: TextAlign.left, // Align text to the left
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
         ProductScreen(categoryName: _selectedCategoryName),
         Image.asset('images/sale.png',
             width: 450, height: 100, fit: BoxFit.cover),
-        Text(
-          'Best Products',
-          textAlign: TextAlign.left,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
+        Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Text(
+            'Best Products',
+            textAlign: TextAlign.left, // Align text to the left
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        ProductScreen(categoryName: _selectedCategoryName),
+        AutoImageSlider2(),
+        Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Text(
+            'UpComing Products',
+            textAlign: TextAlign.left, // Align text to the left
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
         ProductScreen(categoryName: _selectedCategoryName),

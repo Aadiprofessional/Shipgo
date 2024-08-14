@@ -1,3 +1,4 @@
+// ignore: file_names
 import 'package:flutter/material.dart';
 
 import '../../components/Categories.dart';
@@ -5,6 +6,8 @@ import '../../components/Categories.dart';
 import '../../styles/colors.dart';
 
 class HomeContent extends StatelessWidget {
+  const HomeContent({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,8 +19,8 @@ class HomeContent extends StatelessWidget {
          
            
             Categories(),
-            Padding(
-              padding: const EdgeInsets.all(15.0),
+            const Padding(
+              padding: EdgeInsets.all(15.0),
               child: Text(
                 'Only For App Deals',
                 style: TextStyle(

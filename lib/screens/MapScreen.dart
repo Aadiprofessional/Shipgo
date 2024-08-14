@@ -118,6 +118,34 @@ class _MapScreenState extends State<MapScreen> {
           'longitude': data['longitude'],
         };
       }).toList();
+
+      // Select the first address by default
+      if (_savedLocations.isNotEmpty) {
+        _selectedAddressId = _savedLocations.first['id'];
+
+        // Find the closest address to the current location
+        double closestDistance = double.infinity;
+        String? closestAddressId;
+
+        for (var location in _savedLocations) {
+          double distance = Geolocator.distanceBetween(
+            _currentLocation.latitude,
+            _currentLocation.longitude,
+            location['latitude'],
+            location['longitude'],
+          );
+
+          if (distance < closestDistance) {
+            closestDistance = distance;
+            closestAddressId = location['id'];
+          }
+        }
+
+        // Set the closest address as the selected address if found
+        if (closestAddressId != null) {
+          _selectedAddressId = closestAddressId;
+        }
+      }
     });
   }
 
@@ -281,17 +309,19 @@ class _MapScreenState extends State<MapScreen> {
                   margin: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
                   decoration: BoxDecoration(
                     color: isSelected ? Color(0xFF25424D) : Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(8.0),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.grey.withOpacity(0.5),
                         spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: Offset(0, 3),
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
                       ),
                     ],
                   ),
                   child: ListTile(
+                    onTap: () =>
+                        _onAddressSelected(location['id'], location['address']),
                     title: Text(
                       location['address'],
                       style: TextStyle(
@@ -299,17 +329,11 @@ class _MapScreenState extends State<MapScreen> {
                       ),
                     ),
                     subtitle: Text(
-                      'Type: ${location['type']}',
+                      location['type'],
                       style: TextStyle(
                         color: isSelected ? Colors.white : Color(0xFF25424D),
                       ),
                     ),
-                    onTap: () {
-                      setState(() {
-                        _selectedAddressId = location['id'];
-                      });
-                      _onAddressSelected(location['id'], location['address']);
-                    },
                   ),
                 );
               },

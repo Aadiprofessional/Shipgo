@@ -79,48 +79,55 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
   }
 
-  Future<void> addToCart() async {
-    if (selectedStorage == null ||
-        selectedRam == null ||
-        selectedColor == null ||
-        productData == null) {
-      return;
-    }
-
-    final colorDetails =
-        (productData![selectedStorage]![selectedRam]![selectedColor]
-            as Map<String, dynamic>);
-    final cartItem = CartItem(
-      cartId: '',
-      itemName: colorDetails['product'] ?? 'Unknown Product',
-      price: double.tryParse(colorDetails['price'] ?? '0') ?? 0.0,
-      quantity: quantity,
-      color: selectedColor ?? 'No Color Selected',
-      image: colorDetails['image'] ??
-          'default_image_url', // Provide a default image URL
-    );
-
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('User not authenticated')),
-      );
-      return;
-    }
-
-    final cartRef = FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .collection('cart');
-    await cartRef.add(cartItem.toMap());
-
-    final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    cartProvider.addItemToCart(cartItem);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Item added to cart')),
-    );
+ Future<void> addToCart() async {
+  if (selectedStorage == null ||
+      selectedRam == null ||
+      selectedColor == null ||
+      productData == null) {
+    return;
   }
+
+  final colorDetails =
+      (productData![selectedStorage]![selectedRam]![selectedColor]
+          as Map<String, dynamic>);
+  
+  // Generate a unique cartId using Firestore's DocumentReference
+  final userId = FirebaseAuth.instance.currentUser?.uid;
+  if (userId == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('User not authenticated')),
+    );
+    return;
+  }
+
+  final cartRef = FirebaseFirestore.instance
+      .collection('users')
+      .doc(userId)
+      .collection('cart')
+      .doc(); // This will generate a new DocumentReference with a unique ID
+
+  final cartId = cartRef.id; // Get the generated ID
+
+  final cartItem = CartItem(
+    cartId: cartId, // Set the cartId to the generated ID
+    productName: colorDetails['product'] ?? 'Unknown Product',
+    price: double.tryParse(colorDetails['price'] ?? '0') ?? 0.0,
+    quantity: quantity,
+    
+    image: colorDetails['image'] ??
+        'default_image_url', // Provide a default image URL
+  );
+
+  await cartRef.set(cartItem.toMap()); // Use the generated DocumentReference to add the item
+
+  final cartProvider = Provider.of<CartProvider>(context, listen: false);
+  cartProvider.addItemToCart(cartItem);
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('Item added to cart')),
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {

@@ -1,16 +1,20 @@
+// ignore: file_names
 import 'package:flutter/material.dart';
 
 import '../../styles/colors.dart';
 import 'SubCategoryScreen.dart'; // Adjust this import if necessary
 
 class AllCategoriesScreen extends StatefulWidget {
+  const AllCategoriesScreen({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _AllCategoriesScreenState createState() => _AllCategoriesScreenState();
 }
 
 class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
-  List<dynamic> _categories = [];
-  bool _loading = true;
+  final List<dynamic> _categories = [];
+  final bool _loading = true;
 
   @override
   void initState() {
@@ -18,9 +22,7 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
     _fetchCategories();
   }
 
-  Future<void> _fetchCategories() async {
-   
-  }
+  Future<void> _fetchCategories() async {}
 
   void _navigateToSubCategory(String mainId, String categoryId) {
     Navigator.of(context).push(MaterialPageRoute(
@@ -33,13 +35,14 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: _loading
-          ? Center(
+          ? const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   CircularProgressIndicator(color: AppColors.primary),
                   SizedBox(height: 10),
-                  Text('Loading categories...', style: TextStyle(color:AppColors.primary)),
+                  Text('Loading categories...',
+                      style: TextStyle(color: AppColors.primary)),
                 ],
               ),
             )
@@ -48,7 +51,7 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
               itemBuilder: (context, index) {
                 final category = _categories[index];
                 return ListTile(
-                  leading: Icon(Icons.category, color: AppColors.primary),
+                  leading: const Icon(Icons.category, color: AppColors.primary),
                   title: Text(category['categoryName']),
                   subtitle: Text(category['mainCategory']),
                   onTap: () => _navigateToSubCategory(

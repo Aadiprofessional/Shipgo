@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import 'package:shipgo/components/AutoImageSlider2.dart';
 import 'package:shipgo/components/autoImageSlider.dart';
 
 import '../components/Categories.dart';
 import '../components/LeftNavBar.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -68,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   AutoImageSlider(),
                   Categories(),
-                  AutoImageSlider2(),
+                 
                   Padding(
                     padding: const EdgeInsets.only(top: 10),
                     child: Center(

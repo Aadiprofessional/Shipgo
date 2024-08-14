@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 import 'package:shipgo/screens/MapScreen.dart';
 import 'package:shipgo/screens/LoginScreen.dart';
 import 'package:shipgo/screens/SignupScreen.dart';
@@ -22,12 +22,14 @@ void main() async {
   runApp(
     ChangeNotifierProvider(
       create: (context) => CartProvider(),
-      child: MyApp(),
+      child: const MyApp(),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -35,7 +37,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: AuthWrapper(),
+      home: const AuthWrapper(),
       routes: {
         '/home': (context) => HomeScreen(),
         '/login': (context) => LoginScreen(),
@@ -47,6 +49,8 @@ class MyApp extends StatelessWidget {
 }
 
 class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
@@ -68,9 +72,10 @@ class AuthWrapper extends StatelessWidget {
 class MainScreen extends StatefulWidget {
   final User user;
 
-  MainScreen({required this.user});
+  const MainScreen({super.key, required this.user});
 
   @override
+  // ignore: library_private_types_in_public_api
   _MainScreenState createState() => _MainScreenState();
 }
 
@@ -92,6 +97,19 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     userId = widget.user.uid; // Initialize userId from the Firebase user
+
+    // Listen to Firestore changes
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .snapshots()
+        .listen((doc) {
+      if (doc.exists) {
+        setState(() {
+          userProfileImage = doc.data()?['profileImage'];
+        });
+      }
+    });
   }
 
   void _onItemTapped(int index) {
@@ -140,7 +158,7 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
       appBar: AppBar(
-        backgroundColor: Color(0xFF25424D),
+        backgroundColor: const Color(0xFF25424D),
         title: Center(
           child: GestureDetector(
             onTap: () {
@@ -154,22 +172,40 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               );
             },
-            child: Column(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Deliver to ',
-                  style: TextStyle(
-                    fontSize: 18.0,
-                    color: Colors.white,
-                  ),
-                ),
-                Text(
-                  _address,
-                  style: TextStyle(
-                    fontSize: 22.0,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 205, 243, 105),
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Deliver to ',
+                          style: TextStyle(
+                            fontSize: 18.0,
+                            color: Colors.white,
+                          ),
+                        ),
+
+                      // Space between text and icon
+                        Icon(
+                          Icons
+                              .keyboard_arrow_down, // Built-in chevron-down icon
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                    Text(
+                      _address,
+                      style: const TextStyle(
+                        fontSize: 22.0,
+                        fontWeight: FontWeight.bold,
+                        color: Color.fromARGB(255, 205, 243, 105),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -182,7 +218,7 @@ class _MainScreenState extends State<MainScreen> {
                   radius: 25,
                 )
               : Image.asset('images/profile.png', width: 60, height: 60),
-          SizedBox(width: 16.0),
+          const SizedBox(width: 16.0),
         ],
         leading: IconButton(
           icon: Image.asset('images/nav.png', width: 30, height: 30),
@@ -193,11 +229,12 @@ class _MainScreenState extends State<MainScreen> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_cart), label: 'Cart'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Color(0xFF25424D),
+        selectedItemColor: const Color(0xFF25424D),
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
       ),
