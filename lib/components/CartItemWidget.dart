@@ -1,40 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:shipgo/components/CartItem.dart';
+import 'package:shipgo/components/CartItem.dart'; // Correct import for CartItem
 
 class CartItemWidget extends StatelessWidget {
   final CartItem item;
-  final Function(String cartId, int newQuantity) onUpdateQuantity;
-  final Function(String cartId) onRemoveItem;
+  final ValueChanged<int> onUpdateQuantity;
+  final VoidCallback onRemoveItem;
 
-  CartItemWidget({
+  const CartItemWidget({
+    Key? key,
     required this.item,
     required this.onUpdateQuantity,
     required this.onRemoveItem,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Image.network(item.image),
-      title: Text(item.productName),
-      subtitle: Text('₹${item.price.toStringAsFixed(2)}'),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: Icon(Icons.remove),
-            onPressed: () => onUpdateQuantity(item.cartId, item.quantity - 1),
-          ),
-          Text('${item.quantity}'),
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () => onUpdateQuantity(item.cartId, item.quantity + 1),
-          ),
-          IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: () => onRemoveItem(item.cartId),
-          ),
-        ],
+    return Card(
+      child: ListTile(
+        leading: Image.network(item.image, width: 50, height: 50, fit: BoxFit.cover),
+        title: Text(item.name),
+        subtitle: Text('₹${item.price} x ${item.quantity}'),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+                icon: Icon(Icons.remove),
+                onPressed: () => onUpdateQuantity(item.quantity - 1)),
+            IconButton(
+                icon: Icon(Icons.add),
+                onPressed: () => onUpdateQuantity(item.quantity + 1)),
+            IconButton(icon: Icon(Icons.delete), onPressed: onRemoveItem),
+          ],
+        ),
       ),
     );
   }

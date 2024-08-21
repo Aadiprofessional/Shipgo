@@ -110,7 +110,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   final cartItem = CartItem(
     cartId: cartId, // Set the cartId to the generated ID
-    productName: colorDetails['product'] ?? 'Unknown Product',
+    name: colorDetails['product'] ?? 'Unknown Product',
     price: double.tryParse(colorDetails['price'] ?? '0') ?? 0.0,
     quantity: quantity,
     

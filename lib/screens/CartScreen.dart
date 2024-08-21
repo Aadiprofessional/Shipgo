@@ -1,33 +1,31 @@
-// ignore: file_names
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shipgo/components/CartItemWidget.dart';
-import 'package:shipgo/components/cartContext.dart';
-import 'package:shipgo/screens/OrderMapScreen.dart';
+import 'package:shipgo/components/CartItem.dart'; // Ensure this is used across all files
+import 'package:shipgo/components/CartItemWidget.dart'; // Correct import for CartItemWidget
+import 'package:shipgo/components/cartContext.dart'; // Correct import for CartProvider
+import 'package:shipgo/screens/OrderSummaryScreen.dart';
 import '../styles/colors.dart'; // Ensure this path is correct
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _CartScreenState createState() => _CartScreenState();
 }
 
 class _CartScreenState extends State<CartScreen> {
-  bool _loading = true; // Start with loading true
-  bool _isUserLoggedIn = false; // Update this based on your authentication logic
+  bool _loading = true;
+  bool _isUserLoggedIn = false;
 
   @override
   void initState() {
     super.initState();
-    // Simulate a delay to mimic loading state
     Future.delayed(const Duration(seconds: 1), () {
       setState(() {
         _loading = false;
-        _isUserLoggedIn = true; // Simulate user login state
+        _isUserLoggedIn = true; // Simulated login status
       });
     });
   }
@@ -35,7 +33,6 @@ class _CartScreenState extends State<CartScreen> {
   Future<void> _placeOrder() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      // Handle case where the user is not logged in
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please log in to place an order.')),
       );
@@ -53,27 +50,22 @@ class _CartScreenState extends State<CartScreen> {
         'uid': uid,
         'timestamp': FieldValue.serverTimestamp(),
         'totalPrice': totalPrice,
-        'items': cartItems.map((item) => {
-          'productName': item.productName,
-          'price': item.price,
-          'quantity': item.quantity,
-          'image': item.image,
-        }).toList(),
+        'items': cartItems.map((item) => item.toMap()).toList(),
       };
 
       await orderRef.set(orderData);
 
-      // Optionally, navigate to another screen or show a success message
       Navigator.push(
-        // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(
-          builder: (context) => OrderMapScreen(),
+          builder: (context) => OrderSummaryScreen(
+            cartItems: cartItems, // Pass cart items
+            totalAmount: totalPrice, // Pass total price
+            totalAdditionalDiscount: 0.0,
+          ),
         ),
       );
     } catch (e) {
-      // Handle error
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to place order. Please try again.')),
       );
@@ -159,11 +151,11 @@ class _CartScreenState extends State<CartScreen> {
                 final item = cartItems[index];
                 return CartItemWidget(
                   item: item,
-                  onUpdateQuantity: (cartId, newQuantity) {
-                    cartProvider.updateItemQuantity(cartId, newQuantity);
+                  onUpdateQuantity: (newQuantity) {
+                    cartProvider.updateItemQuantity(item.cartId, newQuantity);
                   },
-                  onRemoveItem: (cartId) {
-                    cartProvider.removeItemFromCart(cartId);
+                  onRemoveItem: () {
+                    cartProvider.removeItemFromCart(item.cartId);
                   },
                 );
               },

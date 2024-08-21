@@ -1,35 +1,53 @@
 class CartItem {
   final String cartId;
-  final String productName;
+  final String name;
   final double price;
-  final int quantity;
-  final String image;
+  int quantity;
+  final String image; // New field for image URL
 
   CartItem({
     required this.cartId,
-    required this.productName,
+    required this.name,
     required this.price,
-    required this.quantity,
-    required this.image,
+    this.quantity = 1,
+    required this.image, // Add image URL to the constructor
   });
 
+  // Implement the fromMap method
   factory CartItem.fromMap(Map<String, dynamic> map) {
     return CartItem(
       cartId: map['cartId'],
-      productName: map['productName'],
+      name: map['name'],
       price: map['price'],
       quantity: map['quantity'],
-      image: map['image'],
+      image: map['imageUrl'], // Add image URL to fromMap
+    );
+  }
+
+  // Implement the copyWith method
+  CartItem copyWith({
+    String? cartId,
+    String? name,
+    double? price,
+    int? quantity,
+    String? imageUrl, // Add image URL to copyWith
+  }) {
+    return CartItem(
+      cartId: cartId ?? this.cartId,
+      name: name ?? this.name,
+      price: price ?? this.price,
+      quantity: quantity ?? this.quantity,
+      image: imageUrl ?? this.image,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'cartId': cartId,
-      'productName': productName,
+      'name': name,
       'price': price,
       'quantity': quantity,
-      'image': image,
+      'imageUrl': image, // Add image URL to toMap
     };
   }
 }

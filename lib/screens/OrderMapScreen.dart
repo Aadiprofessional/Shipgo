@@ -6,8 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:provider/provider.dart';
 import 'package:shipgo/components/CartItemWidget.dart';
-import 'package:shipgo/components/cartContext.dart';
-import 'package:shipgo/screens/CartScreen.dart'; // Keep only this import
+import 'package:shipgo/components/cartContext.dart'; // Ensure the context is correctly imported
 
 class OrderMapScreen extends StatefulWidget {
   @override
@@ -32,71 +31,110 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
   }
 
   Future<void> _getCurrentLocation() async {
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-    setState(() {
-      _currentLocation = LatLng(position.latitude, position.longitude);
-      _markers.add(
-        Marker(
-          point: _currentLocation,
-          builder: (context) => Icon(Icons.location_on, color: Colors.blue),
-        ),
-      );
-      _markers.add(
-        Marker(
-          point: _warehouseLocation,
-          builder: (context) => Icon(Icons.store, color: Colors.green),
-        ),
-      );
-      _loading = false;
-    });
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      setState(() {
+        _currentLocation = LatLng(position.latitude, position.longitude);
+        _markers.add(
+          Marker(
+            point: _currentLocation,
+            builder: (context) => Icon(Icons.location_on, color: Colors.blue),
+          ),
+        );
+        _markers.add(
+          Marker(
+            point: _warehouseLocation,
+            builder: (context) => Icon(Icons.store, color: Colors.green),
+          ),
+        );
+        _loading = false;
+      });
+    } catch (e) {
+      // Handle location fetching errors
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to get current location'),
+      ));
+    }
   }
 
   Future<void> _fetchDeliveryPartnerLocation() async {
-    final response = await http.get(Uri.parse('https://your-api.com/api/delivery-partner-location'));
+    try {
+      final response = await http
+          .get(Uri.parse('https://your-api.com/api/delivery-partner-location'));
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final latitude = data['latitude'];
-      final longitude = data['longitude'];
-      setState(() {
-        _deliveryPartnerLocation = LatLng(latitude, longitude);
-        _markers.add(
-          Marker(
-            point: _deliveryPartnerLocation,
-            builder: (context) => Icon(Icons.delivery_dining, color: Colors.orange),
-          ),
-        );
-        _fetchRoute();
-      });
-    } else {
-      throw Exception('Failed to load delivery partner location');
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final latitude = data['latitude'];
+        final longitude = data['longitude'];
+        setState(() {
+          _deliveryPartnerLocation = LatLng(latitude, longitude);
+          _markers.add(
+            Marker(
+              point: _deliveryPartnerLocation,
+              builder: (context) =>
+                  Icon(Icons.delivery_dining, color: Colors.orange),
+            ),
+          );
+          _fetchRoute();
+        });
+      } else {
+        throw Exception('Failed to load delivery partner location');
+      }
+    } catch (e) {
+      // Handle API fetching errors
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to fetch delivery partner location'),
+      ));
     }
   }
 
   Future<void> _fetchRoute() async {
-    final response = await http.get(Uri.parse(
-        'https://api.openrouteservice.org/v2/directions/foot-walking?api_key=YOUR_API_KEY&start=${_deliveryPartnerLocation.longitude},${_deliveryPartnerLocation.latitude}&end=${_currentLocation.longitude},${_currentLocation.latitude}'));
+    try {
+      final response = await http.get(Uri.parse(
+          'https://api.openrouteservice.org/v2/directions/foot-walking?api_key=YOUR_API_KEY&start=${_deliveryPartnerLocation.longitude},${_deliveryPartnerLocation.latitude}&end=${_currentLocation.longitude},${_currentLocation.latitude}'));
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final coordinates = data['routes'][0]['geometry']['coordinates'];
-      final points = coordinates.map((coord) => LatLng(coord[1], coord[0])).toList();
-      setState(() {
-        _markers.add(
-          PolylineLayer(
-            polylines: [
-              Polyline(
-                points: points,
-                color: Colors.blue,
-                strokeWidth: 4.0,
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final coordinates = data['routes'][0]['geometry']['coordinates'];
+        final points =
+            coordinates.map((coord) => LatLng(coord[1], coord[0])).toList();
+        setState(() {
+          // Update the FlutterMap children list directly
+          FlutterMap(
+            mapController: _mapController,
+            options: MapOptions(
+              center: _currentLocation,
+              zoom: _zoomLevel,
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                subdomains: ['a', 'b', 'c'],
+              ),
+              MarkerLayer(
+                markers: _markers,
+              ),
+              PolylineLayer(
+                polylines: [
+                  Polyline(
+                    points: points,
+                    color: Colors.blue,
+                    strokeWidth: 4.0,
+                  ),
+                ],
               ),
             ],
-          ) as Marker,
-        );
-      });
-    } else {
-      throw Exception('Failed to load route');
+          );
+        });
+      } else {
+        throw Exception('Failed to load route');
+      }
+    } catch (e) {
+      // Handle route fetching errors
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to fetch route'),
+      ));
     }
   }
 
@@ -190,12 +228,11 @@ class _OrderMapScreenState extends State<OrderMapScreen> {
                 final item = cartItems[index];
                 return CartItemWidget(
                   item: item,
-                  onUpdateQuantity: (cartId, newQuantity) {
-                    // Handle update quantity
-                    cartProvider.updateItemQuantity(cartId, newQuantity);
+                  onUpdateQuantity: (newQuantity) {
+                    cartProvider.updateItemQuantity(item.cartId, newQuantity);
                   },
-                  onRemoveItem: (cartId) {
-                    cartProvider.removeItemFromCart(cartId);
+                  onRemoveItem: () {
+                    cartProvider.removeItemFromCart(item.cartId);
                   },
                 );
               },

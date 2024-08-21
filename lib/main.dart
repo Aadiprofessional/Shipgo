@@ -1,9 +1,11 @@
-import 'package:flutter/material.dart';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
+
 import 'package:shipgo/screens/MapScreen.dart';
 import 'package:shipgo/screens/LoginScreen.dart';
 import 'package:shipgo/screens/SignupScreen.dart';
@@ -42,6 +44,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => HomeScreen(),
         '/login': (context) => LoginScreen(),
         '/signup': (context) => SignupScreen(),
+        '/main': (context) => MainScreen(user: FirebaseAuth.instance.currentUser!),
       },
       debugShowCheckedModeBanner: false, // Remove the debug banner
     );
@@ -75,7 +78,6 @@ class MainScreen extends StatefulWidget {
   const MainScreen({super.key, required this.user});
 
   @override
-  // ignore: library_private_types_in_public_api
   _MainScreenState createState() => _MainScreenState();
 }
 
@@ -188,11 +190,8 @@ class _MainScreenState extends State<MainScreen> {
                             color: Colors.white,
                           ),
                         ),
-
-                      // Space between text and icon
                         Icon(
-                          Icons
-                              .keyboard_arrow_down, // Built-in chevron-down icon
+                          Icons.keyboard_arrow_down, // Built-in chevron-down icon
                           color: Colors.white,
                         ),
                       ],

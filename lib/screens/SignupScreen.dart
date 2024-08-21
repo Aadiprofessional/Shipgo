@@ -106,7 +106,7 @@ class _SignupScreenState extends State<SignupScreen> {
         await prefs.setString('profileImage', imageUrl);
 
         _showToast('Signup successful');
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushReplacementNamed(context, '/main');
       }
     } on FirebaseAuthException catch (e) {
       _showToast(e.message ?? 'Signup failed');

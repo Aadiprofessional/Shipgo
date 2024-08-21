@@ -41,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text,
       );
       _showToast('Login successful');
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(context, '/main');
     } on FirebaseAuthException catch (e) {
       _showToast(e.message ?? 'Login failed');
     } finally {
@@ -199,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/Signup');
+                      Navigator.pushNamed(context, '/signup');
                       _showToast('Navigating to Sign Up');
                     },
                     child: Text(
